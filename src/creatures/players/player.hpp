@@ -202,7 +202,6 @@ public:
 		return CREATURETYPE_PLAYER;
 	}
 
-	uint16_t getLastMount() const;
 	uint16_t getCurrentMount() const;
 	void setCurrentMount(uint16_t mountId);
 	bool isMounted() const {
@@ -223,8 +222,8 @@ public:
 
 	uint16_t getDodgeChance() const;
 
-	uint8_t isRandomMounted() const;
-	void setRandomMount(uint8_t isMountRandomized);
+	bool isRandomMounted() const;
+	void setRandomMount(bool randomizeMount);
 
 	void sendFYIBox(const std::string &message) const;
 
@@ -639,6 +638,8 @@ public:
 	bool openShopWindow(const std::shared_ptr<Npc> &npc, const std::vector<ShopBlock> &shopItems = {});
 	bool closeShopWindow();
 	bool updateSaleShopList(const std::shared_ptr<Item> &item);
+	void updateSaleShopList();
+	void updateState();
 	bool hasShopItemForSale(uint16_t itemId, uint8_t subType) const;
 
 	void setChaseMode(bool mode);
@@ -657,8 +658,13 @@ public:
 	static bool lastHitIsPlayer(const std::shared_ptr<Creature> &lastHitCreature);
 
 	// stash functions
-	bool addItemFromStash(uint16_t itemId, uint32_t itemCount);
+	ReturnValue addItemFromStash(uint16_t itemId, uint32_t itemCount);
 	void stowItem(const std::shared_ptr<Item> &item, uint32_t count, bool allItems);
+
+	std::vector<std::shared_ptr<Container>> getAllContainers(bool onlyFromMainBackpack = true) const;
+	std::shared_ptr<Container> getBackpack() const;
+
+	ReturnValue removeItem(const std::shared_ptr<Item> &item, uint32_t count = 0);
 
 	void changeHealth(int32_t healthChange, bool sendHealthChange = true) override;
 	void changeMana(int32_t manaChange) override;
@@ -1279,8 +1285,6 @@ public:
 
 	bool checkAutoLoot(bool isBoss) const;
 	bool checkChainSystem() const;
-	bool checkEmoteSpells() const;
-	bool checkSpellNameInsteadOfWords() const;
 	bool checkMute() const;
 
 	QuickLootFilter_t getQuickLootFilter() const;
@@ -1617,7 +1621,8 @@ private:
 	uint32_t coinBalance = 0;
 	uint32_t coinTransferableBalance = 0;
 	uint16_t xpBoostTime = 0;
-	uint8_t randomMount = 0;
+
+	bool randomMount = false;
 
 	uint16_t lastStatsTrainingTime = 0;
 	uint16_t staminaMinutes = 2520;
@@ -1731,12 +1736,8 @@ private:
 	uint16_t getLookCorpse() const override;
 	void getPathSearchParams(const std::shared_ptr<Creature> &creature, FindPathParams &fpp) override;
 
-	void setDead(bool isDead) {
-		m_isDead = isDead;
-	}
-	bool isDead() const override {
-		return m_isDead;
-	}
+	void setDead(bool isDead);
+	bool isDead() const override;
 
 	void triggerMomentum();
 	void clearCooldowns();

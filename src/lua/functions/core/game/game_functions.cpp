@@ -120,6 +120,9 @@ void GameFunctions::init(lua_State* L) {
 	Lua::registerMethod(L, "Game", "getSoulCoreItems", GameFunctions::luaGameGetSoulCoreItems);
 	Lua::registerMethod(L, "Game", "getMonstersByRace", GameFunctions::luaGameGetMonstersByRace);
 	Lua::registerMethod(L, "Game", "getMonstersByBestiaryStars", GameFunctions::luaGameGetMonstersByBestiaryStars);
+	Lua::registerMethod(L, "Game", "getTitleByName", GameFunctions::luaGameGetTitleByName);
+
+	Lua::registerMethod(L, "Game", "getHouseCountByAccount", GameFunctions::luaHouseGetHouseCountByAccount);
 }
 
 // Game
@@ -1091,5 +1094,54 @@ int GameFunctions::luaGameGetAchievements(lua_State* L) {
 		Lua::setField(L, "secret", achievement_it.second.secret);
 		lua_rawseti(L, -2, ++index);
 	}
+	return 1;
+}
+
+int GameFunctions::luaGameGetTitleByName(lua_State* L) {
+	// Game.getTitleByName(titleName)
+	const std::string titleName = Lua::getString(L, 1);
+	if (titleName.empty()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const Title &title = g_game().getTitleByName(titleName);
+	if (title.m_maleName.empty() && title.m_femaleName.empty()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_createtable(L, 0, 4);
+	Lua::pushString(L, title.m_maleName);
+	lua_setfield(L, -2, "maleName");
+
+	Lua::pushString(L, title.m_femaleName);
+	lua_setfield(L, -2, "femaleName");
+
+	Lua::pushNumber(L, title.m_id);
+	lua_setfield(L, -2, "id");
+
+	Lua::pushString(L, title.m_description);
+	lua_setfield(L, -2, "description");
+	return 1;
+}
+
+int GameFunctions::luaHouseGetHouseCountByAccount(lua_State* L) {
+	// Game:getHouseCountByAccount(accountId)
+	const auto &houses = g_game().map.houses.getHouses();
+	if (houses.empty()) {
+		Lua::reportErrorFunc("Houses not found");
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint32_t accountId = Lua::getNumber<uint32_t>(L, 2);
+	uint16_t count = 0;
+	for (const auto &[id, house] : houses) {
+		if (house->getOwnerAccountId() == accountId) {
+			++count;
+		}
+	}
+	lua_pushnumber(L, count);
 	return 1;
 }

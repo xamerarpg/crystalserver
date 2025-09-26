@@ -317,7 +317,6 @@ public:
 	uint16_t wareId = 0;
 	uint16_t bedPartOf = 0;
 	uint16_t m_transformOnUse = 0;
-	uint16_t preventLoss = 0;
 
 	MagicEffectClasses magicEffect = CONST_ME_NONE;
 	Direction bedPartnerDir = DIRECTION_NONE;
@@ -391,11 +390,9 @@ public:
 	struct BagItemInfo {
 		std::string name = "";
 		uint16_t id = 0;
-		uint32_t chance = 0;
+		double chance = 0;
 		uint32_t minAmount = 1;
 		uint32_t maxAmount = 1;
-		uint64_t minRange = 0;
-		uint64_t maxRange = 0;
 		std::string monsterClass = "";
 		uint32_t monsterRaceId = 0;
 	};
@@ -485,7 +482,7 @@ public:
 		return allBagItems;
 	}
 
-	void setItemBag(uint16_t itemId, const std::string &itemName, uint32_t chance, uint32_t minAmount, uint32_t maxAmount, uint64_t minRange, uint64_t maxRange, const std::string &monsterClass, uint32_t monsterRaceId);
+	void setItemBag(uint16_t itemId, const std::string &itemName, double chance, uint32_t minAmount, uint32_t maxAmount, const std::string &monsterClass, uint32_t monsterRaceId);
 
 private:
 	std::vector<ItemType> items;
